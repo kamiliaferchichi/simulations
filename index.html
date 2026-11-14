@@ -34,27 +34,48 @@
 </main>
 <script>
   // ✏️ MODIFIEZ SEULEMENT CETTE LISTE : une ligne par TP.
-  // Chaque lien = nom du dossier du TP + /index.html
+  // dossier: nom du dossier du TP (la page cherche toute seule HTML5/index.html puis index.html)
+  // lien: lien direct (pour un PDF par exemple)
     const tps = [
     { titre: "TP1 : partie 1", desc: "Compte rendu (PDF)", lien: "tp1_partie_partie2/Compte%20Rendu%20tp1.pdf" },
     { titre: "TP1 : partie 2 (MPLS)", desc: "Compte rendu (PDF)", lien: "tp1_partie_partie2/Compte_rendu_TP1_MPLS_Partie2.pdf" },
-    { titre: "Lab BGP", desc: "Protocole de routage BGP", lien: "lab_bgp/HTML5/index.html" },
-    { titre: "Lab Redistribution", desc: "Redistribution de routes", lien: "lab_redistribution/HTML5/index.html" },
-    { titre: "TP2", desc: "Travaux pratiques 2", lien: "tp2/HTML5/index.html" },
-    { titre: "TP3", desc: "Travaux pratiques 3", lien: "tp3/HTML5/index.html" },
-    { titre: "TP4 : IPsec", desc: "Configuration VPN IPsec", lien: "tp4-ipsec/HTML5/index.html" },
-    { titre: "TP4 : GRE", desc: "Tunnel GRE", lien: "tp4-gre/HTML5/index.html" },
-    { titre: "TP5 : FR basic", desc: "Travaux pratiques 5, niveau basic", lien: "tp5-fr-basic/HTML5/index.html" },
-    { titre: "TP5 : FR advanced", desc: "Travaux pratiques 5, niveau advanced", lien: "tp5-fr-advanced/HTML5/index.html" }
+    { titre: "Lab BGP", desc: "Protocole de routage BGP", dossier: "lab_bgp" },
+    { titre: "Lab Redistribution", desc: "Redistribution de routes", dossier: "lab_redistribution" },
+    { titre: "TP2", desc: "Travaux pratiques 2", dossier: "tp2" },
+    { titre: "TP3", desc: "Travaux pratiques 3", dossier: "tp3" },
+    { titre: "TP4 : IPsec", desc: "Configuration VPN IPsec", dossier: "tp4-ipsec" },
+    { titre: "TP4 : GRE", desc: "Tunnel GRE", dossier: "tp4-gre" },
+    { titre: "TP5 : FR basic", desc: "Travaux pratiques 5, niveau basic", dossier: "tp5-fr-basic" },
+    { titre: "TP5 : FR advanced", desc: "Travaux pratiques 5, niveau advanced", dossier: "tp5-fr-advanced" }
   ];
 
   const grid = document.getElementById("grid");
+
+  async function existe(url) {
+    try {
+      const r = await fetch(url, { method: "HEAD", cache: "no-store" });
+      return r.ok;
+    } catch (e) { return false; }
+  }
+
+  async function ouvrir(ev, tp) {
+    if (!tp.dossier) return;            // lien direct : comportement normal
+    ev.preventDefault();
+    const essais = [tp.dossier + "/HTML5/index.html", tp.dossier + "/index.html"];
+    for (const u of essais) {
+      if (await existe(u)) { window.open(u, "_blank", "noopener"); return; }
+    }
+    alert("TP introuvable sur GitHub.\nDossier cherché : " + tp.dossier +
+          "\nVérifiez que ce dossier existe (même nom, mêmes majuscules).");
+  }
+
   tps.forEach((tp, i) => {
     const a = document.createElement("a");
     a.className = "card";
-    a.href = tp.lien;
+    a.href = tp.lien || (tp.dossier + "/HTML5/index.html");
     a.target = "_blank";
     a.rel = "noopener";
+    a.addEventListener("click", (ev) => ouvrir(ev, tp));
     const tag = document.createElement("div"); tag.className = "tag"; tag.textContent = "TP " + (i + 1);
     const name = document.createElement("div"); name.className = "name"; name.textContent = tp.titre;
     const desc = document.createElement("div"); desc.className = "desc"; desc.textContent = tp.desc;
